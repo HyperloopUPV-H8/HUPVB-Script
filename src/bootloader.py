@@ -34,15 +34,14 @@ def upload_code(file_path : str) :
     erase_memory()
     sleep(0.01)
     print("|    Uploading code...")
+
     file = open(file=file_path, mode='rb')
     end = False
-
-    pbar = tqdm(range(7), colour='green', leave=True)
+    pbar = tqdm(range(7), colour='green', leave=True)#Progress bar chula chula
     for i in pbar:
         pbar.set_description("Sector " + str(i) + " of 6")
 
         data = file.read(32768)
-
         #Si hemos llegado al final del archivo, rellenamos con 0xff
         if len(data) < 32768:
             end = True
@@ -54,9 +53,13 @@ def upload_code(file_path : str) :
             break
 
     remaining_data = file.read()
-    if len(remaining_data) > 0:
-        raise BootloaderException("The file is too big")
+    file.close()
 
+    if len(remaining_data) > 0:
+        print(f"|    The file is too big, erasing memory")
+        erase_memory()
+        raise BootloaderException("The file is too big")
+    
     print("- Done 🥳")
     
 def get_version() -> int : 
