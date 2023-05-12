@@ -37,8 +37,6 @@ def upload_code(file) :
     sleep(0.01)
     print("|    Uploading code...")
     decode_hex_file(file, write_memory)
-    print("|    Starting code ->")
-    exit_bootmode(0x8000000)
     print("- Done 🥳")
     
 #Done
@@ -127,17 +125,6 @@ def __initialize_can():
 def __unitialize_can():
     error_handler(PCAN_BASIC.Uninitialize(CHANNEL))
 
-def __write_memory_order(memory_adress: int, data : List[int]) :
-    msg_content = __int_to_byte_array(memory_adress) + [255 if len(data) == 256 else len(data)]
-    send_message(Message(Commands.WRITE_MEMORY.value, msg_content))    
-    __wait_for_bootloader_message(matches_first_byte=Commands.ACK.value)
-
-    while len(data) > 0:
-        send_message(Message(Commands.WRITE_MEMORY.value, data[0:64]))
-        data = data[64:]
-        
-    __wait_for_bootloader_message(matches_first_byte=Commands.ACK.value)
-
 def __wait_for_bootloader_command_response(response_code = 0) -> List[int]:
     response = [ ]
     msg = __wait_for_bootloader_message(matches_first_byte=Commands.ACK.value)
@@ -165,13 +152,6 @@ def __wait_for_bootloader_message(matches_first_byte=None) -> Message:
     
     raise BootloaderException()
 
-def __int_to_byte_array(x : int) -> List[int]:
-    result = []
-    
-    for i in range(int(log2(x) / 8) + 1):
-        result.insert(0, (x >> (i*8)) & 0xff)
-    
-    return result
 def __get_current_time_ms() -> int:
     return int(time() * 1000)
 

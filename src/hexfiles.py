@@ -38,8 +38,6 @@ def decode_hex_file(file_path : str, upload_func : Callable[[int, List[int]], No
             base_adress = (instruction.content[0] << 8 + instruction.content[1]) << 16
 
 
-
-
 def __group_hex_instructions(hex_instructions : List[HexInstruction]) -> List[HexInstruction]:
     hex_instructions = [x for x in hex_instructions]
     result = []
