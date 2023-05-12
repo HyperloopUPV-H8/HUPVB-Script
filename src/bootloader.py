@@ -1,9 +1,8 @@
 from .pcan import send_message, read_message, Message, error_handler, PCAN_BASIC, CHANNEL, CHANNEL_PARAMETERS
-from .hexfiles import decode_hex_file
 
 from time import sleep, time
 from enum import Enum
-from math import log2
+from tqdm import tqdm
 from typing import List
 
 VERBOSE = False
@@ -28,18 +27,38 @@ class ResponseStatus(Enum):
     ERROR=1
     BAD_PARAMETERS=2
     
-
-def upload_code(file) :
-    print(f"- 👨‍💻 Upload code from file: {file}")
+def upload_code(file_path : str) :
+    print(f"- 👨‍💻 Upload code from file: {file_path}")
     print(f"|    Bootloader version : {get_version()}")
     print("|    Erasing memory")
     erase_memory()
     sleep(0.01)
     print("|    Uploading code...")
-    decode_hex_file(file, write_memory)
+    file = open(file=file_path, mode='rb')
+    end = False
+
+    pbar = tqdm(range(7), colour='green', leave=True)
+    for i in pbar:
+        pbar.set_description("Sector " + str(i) + " of 6")
+
+        data = file.read(32768)
+
+        #Si hemos llegado al final del archivo, rellenamos con 0xff
+        if len(data) < 32768:
+            end = True
+            map(lambda x: x if x != '' else 0xff, data)
+
+        write_memory(i, data)
+
+        if end:
+            break
+
+    remaining_data = file.read()
+    if len(remaining_data) > 0:
+        raise BootloaderException("The file is too big")
+
     print("- Done 🥳")
     
-#Done
 def get_version() -> int : 
     __initialize_can()
     send_message(Message(int(Commands.GET_VERSION.value), []))
@@ -50,13 +69,12 @@ def get_version() -> int :
     __unitialize_can()
     return msg[0]
 
-#Done
 def read_memory(sector: int) -> List[int]:
     if((sector < 0) or (sector > 7)):
         raise BootloaderException("Sector must be between 0 and 7")
 
     __initialize_can()
-    send_message(Message(int(Commands.READ_MEMORY.value), []))
+    send_message(Message(int(Commands.READ_MEMORY.value), [sector]))
 
     result = []
     
@@ -85,7 +103,7 @@ def read_memory(sector: int) -> List[int]:
 def write_memory(sector : int, data : List[int]) :
     __initialize_can()
 
-    send_message(Message(int(Commands.WRITE_MEMORY.value), []))
+    send_message(Message(int(Commands.WRITE_MEMORY.value), [sector]))
 
     __wait_for_bootloader_message(matches_first_byte=Commands.ACK.value)
     send_message(Message(int(Commands.ACK.value), []))
