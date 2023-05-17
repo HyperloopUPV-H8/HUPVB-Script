@@ -34,32 +34,7 @@ def upload_code(file_path : str) :
     erase_memory()
     sleep(0.01)
     print("|    Uploading code...")
-
-    file = open(file=file_path, mode='rb')
-    end = False
-    pbar = tqdm(range(7), colour='green', leave=True)#Progress bar chula chula
-    for i in pbar:
-        pbar.set_description("Sector " + str(i) + " of 6")
-
-        data = file.read(32768)
-        #Si hemos llegado al final del archivo, rellenamos con 0xff
-        if len(data) < 32768:
-            end = True
-            map(lambda x: x if x != '' else 0xff, data)
-
-        write_memory(i, data)
-
-        if end:
-            break
-
-    remaining_data = file.read()
-    file.close()
-
-    if len(remaining_data) > 0:
-        print(f"|    The file is too big, erasing memory")
-        erase_memory()
-        raise BootloaderException("The file is too big")
-    
+    __upload_code(file_path)
     print("- Done 🥳")
     
 def get_version() -> int : 
@@ -140,6 +115,33 @@ def erase_memory():
 
 
 # Private functions
+def __upload_code(file_path : str):
+    file = open(file=file_path, mode='rb')
+    end = False
+    pbar = tqdm(range(7), colour='green', leave=True)#Progress bar chula chula
+    for i in pbar:
+        pbar.set_description("Sector " + str(i) + " of 6")
+
+        data = file.read(32768)
+        #Si hemos llegado al final del archivo, rellenamos con 0xff
+        if len(data) < 32768:
+            end = True
+            map(lambda x: x if x != '' else 0xff, data)
+
+        write_memory(i, data)
+
+        if end:
+            break
+
+    remaining_data = file.read()
+    file.close()
+
+    if len(remaining_data) > 0:
+        print(f"|    The file is too big, erasing memory")
+        erase_memory()
+        raise BootloaderException("The file is too big")
+    
+
 def __initialize_can():
     error_handler(PCAN_BASIC.InitializeFD(CHANNEL, CHANNEL_PARAMETERS))
     
