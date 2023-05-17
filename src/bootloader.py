@@ -118,7 +118,7 @@ def erase_memory():
 def __upload_code(file_path : str):
     file = open(file=file_path, mode='rb')
     end = False
-    pbar = tqdm(range(7), colour='green', leave=True)#Progress bar chula chula
+    pbar = tqdm(range(6), colour='green', leave=True)#Progress bar chula chula
     for i in pbar:
         pbar.set_description("Sector " + str(i) + " of 6")
 
