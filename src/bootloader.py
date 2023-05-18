@@ -113,7 +113,7 @@ def write_memory(sector : int, data : List[int]) :
 
 def erase_memory():
     __initialize_can()
-    send_message(Message(Commands.ERASE_MEMORY.value, [0x00, 0x06]))    
+    send_message(Message(Commands.ERASE_MEMORY.value, [0x00, 0x05]))    
     __wait_for_bootloader_message(matches_first_byte=Commands.ACK.value)
     __wait_for_bootloader_message(matches_first_byte=Commands.ACK.value)
 
