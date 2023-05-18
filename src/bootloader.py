@@ -4,6 +4,7 @@ from time import sleep, time
 from enum import Enum
 from tqdm import tqdm
 from typing import List
+from math import ceil
 
 
 VERBOSE = False
@@ -31,7 +32,7 @@ class ResponseStatus(Enum):
 def upload_code(file_path) :
     print(file_path)
     print(f"- 👨‍💻 Upload code from file: {file_path}")
-    print(f"|    Bootloader version : {get_version()}")
+    print(f"|    Bootloader version : {get_version().value}")
     print("|    Erasing memory")
     erase_memory()
     sleep(0.01)
@@ -121,26 +122,26 @@ def erase_memory():
 
 # Private functions
 def __upload_code(file_path: str):
+    page_size_in_bytes = 32768*4
+    max_pages = 6
+
     file = open(file=file_path, mode='rb')
-    end = False
+    # end = False
 
     data = file.read()
-    varible = len(data)
-    print(varible)
-    print(6*32768)
-    if (varible > (6*32768*4)):
+    variable = len(data)
+    number_of_sectors = ceil(variable/page_size_in_bytes)
+    if (variable > (max_pages*page_size_in_bytes)):
         print(f"|    The file is too big")
         return 
     
-    pbar = tqdm(range(7), colour='green', leave=True, position=0)#Progress bar chula chula
+
+    pbar = tqdm(range(number_of_sectors), colour='green', leave=True, position=0)#Progress bar chula chula
     for i in pbar:
-        pbar.set_description("Sector " + str(i) + " of 6")
-        # bytes = file.read(32768)
-        # data: List[int] = [int(byte) for byte in bytes]
+        pbar.set_description("Sector " + str(i) + " of " + str(number_of_sectors-1))
             
         #Si hemos llegado al final del archivo, rellenamos con 0xff
         aux = len(data)
-        print(aux)
         if aux < 32768*4:
             end = True
             data += b'\xff' * (32768*4 - len(data))
@@ -148,13 +149,15 @@ def __upload_code(file_path: str):
         write_memory(i, data[0:32768*4])
         data = data[32768*4:]
 
-        if end:
-            break
+        # if end:
+        #     break
        
-
+    
+    
     remaining_data = file.read()
     file.close()
 
+    #Redundancia por si acaso
     if len(remaining_data) > 0:
         print(f"|    The file is too big, erasing memory")
         erase_memory()
