@@ -36,46 +36,7 @@ def upload_code(file_path) :
     erase_memory()
     sleep(0.01)
     print("|    Uploading code...")
-
-    file = open(file=file_path, mode='rb')
-    end = False
-
-    data = file.read()
-    varible = len(data)
-    print(varible)
-    print(6*32768)
-    if (varible > (6*32768*4)):
-        print(f"|    The file is too big")
-        return 
-    
-    pbar = tqdm(range(7), colour='green', leave=True, position=0)#Progress bar chula chula
-    for i in pbar:
-        pbar.set_description("Sector " + str(i) + " of 6")
-        # bytes = file.read(32768)
-        # data: List[int] = [int(byte) for byte in bytes]
-            
-        #Si hemos llegado al final del archivo, rellenamos con 0xff
-        aux = len(data)
-        print(aux)
-        if aux < 32768*4:
-            end = True
-            data += b'\xff' * (32768*4 - len(data))
-
-        write_memory(i, data[0:32768*4])
-        data = data[32768*4:]
-
-        if end:
-            break
-       
-
-    remaining_data = file.read()
-    file.close()
-
-    if len(remaining_data) > 0:
-        print(f"|    The file is too big, erasing memory")
-        erase_memory()
-        raise BootloaderException("The file is too big")
-    
+    __upload_code(file_path)
     print("- Done 🥳")
     
 def get_version() -> int : 
@@ -159,6 +120,47 @@ def erase_memory():
 
 
 # Private functions
+def __upload_code(file_path: str):
+    file = open(file=file_path, mode='rb')
+    end = False
+
+    data = file.read()
+    varible = len(data)
+    print(varible)
+    print(6*32768)
+    if (varible > (6*32768*4)):
+        print(f"|    The file is too big")
+        return 
+    
+    pbar = tqdm(range(7), colour='green', leave=True, position=0)#Progress bar chula chula
+    for i in pbar:
+        pbar.set_description("Sector " + str(i) + " of 6")
+        # bytes = file.read(32768)
+        # data: List[int] = [int(byte) for byte in bytes]
+            
+        #Si hemos llegado al final del archivo, rellenamos con 0xff
+        aux = len(data)
+        print(aux)
+        if aux < 32768*4:
+            end = True
+            data += b'\xff' * (32768*4 - len(data))
+
+        write_memory(i, data[0:32768*4])
+        data = data[32768*4:]
+
+        if end:
+            break
+       
+
+    remaining_data = file.read()
+    file.close()
+
+    if len(remaining_data) > 0:
+        print(f"|    The file is too big, erasing memory")
+        erase_memory()
+        raise BootloaderException("The file is too big")
+    
+
 def __initialize_can():
     error_handler(PCAN_BASIC.InitializeFD(CHANNEL, CHANNEL_PARAMETERS))
     
