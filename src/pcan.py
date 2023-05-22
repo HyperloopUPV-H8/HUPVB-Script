@@ -2,7 +2,7 @@ from .PCANBasic import *
 from typing import *
 
 CHANNEL = PCAN_USBBUS1
-CHANNEL_PARAMETERS = b'f_clock_mhz=20, nom_brp=4, nom_tseg1=14, nom_tseg2=5, nom_sjw=16, data_brp=1, data_tseg1=14, data_tseg2=5, data_sjw=4'
+CHANNEL_PARAMETERS  = b'f_clock_mhz=60, nom_brp=3, nom_tseg1=15, nom_tseg2=4, nom_sjw=2, data_brp=3, data_tseg1=3, data_tseg2=1, data_sjw=1'
 PCAN_BASIC = PCANBasic()
 DLC_TO_LEN = { 0:0 , 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:12, 10:16, 11:20, 12:24, 13:32, 14:48, 15:64 }
 
